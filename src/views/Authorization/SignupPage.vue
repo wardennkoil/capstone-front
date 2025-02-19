@@ -1,10 +1,12 @@
 <script>
 import axiosInstance from "../../requests/axiosInstance.js";
 import AuthSubmitButton from "../../components/AuthSubmitButton.vue";
+import { RadioGroup, RadioGroupOption } from '@headlessui/vue'
+import { CheckCircleIcon } from '@heroicons/vue/20/solid'
 
 export default {
   name: "SignupPage",
-  components: {AuthSubmitButton},
+  components: {AuthSubmitButton, RadioGroup, RadioGroupOption, CheckCircleIcon},
   data() {
     return {
       email: '',
@@ -16,6 +18,11 @@ export default {
       type: 'applicant', // Default user type
       errorMessage: '',
       isLoading: false,
+      mailingLists: [
+        { id: 1, title: 'Applicant', },
+        { id: 2, title: 'Company', },
+      ],
+      selectedMailingLists: {},
     };
   },
   methods: {
@@ -34,8 +41,19 @@ export default {
           email: this.email,
           password: this.password,
           phone: this.phone,
-          type: this.type,
-        });
+          type: this.selectedMailingLists.title.toLowerCase(),
+        }).then(async (response) => {
+          await axiosInstance.post("/auth/login", {
+            email: this.email,
+            password: this.password,
+          }).then((response) => {
+            localStorage.setItem("token", response.data.token);
+            if(this.selectedMailingLists === 'applicant'){
+              this.$router.push("/profile-create");
+            } else {
+              this.$router.push("/company-create");
+            }
+          });        });
         console.log("Signup successful:", response.data);
         this.$router.push('/login'); // Redirect to login page
       } catch (error) {
@@ -44,6 +62,9 @@ export default {
       this.isLoading = false;
     },
   },
+  mounted() {
+    this.selectedMailingLists = this.mailingLists[0]
+  }
 };
 </script>
 
@@ -79,6 +100,25 @@ export default {
           <div>
             <label class="block text-sm font-medium text-gray-900">Confirm Password</label>
             <input type="password" v-model="confirmPassword" required class="input-field" />
+          </div>
+          <div>
+            <fieldset>
+              <legend class="text-sm/6 font-semibold text-gray-900">Sign up as</legend>
+              <RadioGroup v-model="selectedMailingLists" class="mt-2 grid grid-cols-1 gap-y-6 sm:grid-cols-3 sm:gap-x-4">
+                <RadioGroupOption as="template" v-for="mailingList in mailingLists" :key="mailingList.id" :value="mailingList" :aria-label="mailingList.title" :aria-description="`${mailingList.description} to ${mailingList.users}`" v-slot="{ active, checked }">
+                  <div :class="[active ? 'border-indigo-600 ring-2 ring-indigo-600' : 'border-gray-300', 'relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-xs focus:outline-hidden']">
+          <span class="flex flex-1">
+            <span class="flex flex-col">
+              <span class="block text-sm font-medium text-gray-900">{{ mailingList.title }}</span>
+
+            </span>
+          </span>
+                    <CheckCircleIcon :class="[!checked ? 'invisible' : '', 'size-5 text-indigo-600']" aria-hidden="true" />
+                    <span :class="[active ? 'border' : 'border-2', checked ? 'border-indigo-600' : 'border-transparent', 'pointer-events-none absolute -inset-px rounded-lg']" aria-hidden="true" />
+                  </div>
+                </RadioGroupOption>
+              </RadioGroup>
+            </fieldset>
           </div>
           <div v-if="errorMessage" class="text-red-600 text-sm">{{ errorMessage }}</div>
           <div>
