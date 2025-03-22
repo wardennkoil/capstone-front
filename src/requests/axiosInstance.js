@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-    baseURL: 'http://localhost:5000', // Change this if needed
+    baseURL: 'http://localhost:6000/graphql', // Change this if needed
     headers: {
         'Content-Type': 'application/json',
     },

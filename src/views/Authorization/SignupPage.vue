@@ -3,6 +3,7 @@ import axiosInstance from "../../requests/axiosInstance.js";
 import AuthSubmitButton from "../../components/AuthSubmitButton.vue";
 import { RadioGroup, RadioGroupOption } from '@headlessui/vue'
 import { CheckCircleIcon } from '@heroicons/vue/20/solid'
+import { gql } from 'graphql-tag';
 
 export default {
   name: "SignupPage",
@@ -29,38 +30,80 @@ export default {
     async handleSignup() {
       this.errorMessage = '';
       this.isLoading = true;
+
       if (this.password !== this.confirmPassword) {
         this.errorMessage = "Passwords do not match";
+        this.isLoading = false;
         return;
       }
 
+      const SIGNUP_MUTATION = gql`
+    mutation Signup($firstName: String!, $lastName: String!, $email: String!, $password: String!, $phone: String!, $type: String!) {
+      user {
+        signup(
+          first_name: $firstName,
+          last_name: $lastName,
+          email: $email,
+          password: $password,
+          phone: $phone,
+          type: $type
+        ) {
+          _id
+          first_name
+          last_name
+          email
+          phone
+        }
+      }
+    }
+  `;
+
+      const LOGIN_QUERY = gql`
+    query Login($email: String!, $password: String!) {
+      user {
+        login(email: $email, password: $password)
+      }
+    }
+  `;
+
       try {
-        const response = await axiosInstance.post('/auth/signup', {
-          firstname: this.firstname,
-          lastname: this.lastname,
-          email: this.email,
-          password: this.password,
-          phone: this.phone,
-          type: this.selectedMailingLists.title.toLowerCase(),
-        }).then(async (response) => {
-          await axiosInstance.post("/auth/login", {
+        // Signup request
+        await axiosInstance.post('', {
+          query: SIGNUP_MUTATION,
+          variables: {
+            firstName: this.firstname,
+            lastName: this.lastname,
             email: this.email,
             password: this.password,
-          }).then((response) => {
-            localStorage.setItem("token", response.data.token);
-            if(this.selectedMailingLists === 'applicant'){
-              this.$router.push("/profile-create");
-            } else {
-              this.$router.push("/company-create");
-            }
-          });        });
-        console.log("Signup successful:", response.data);
-        this.$router.push('/login'); // Redirect to login page
+            phone: this.phone,
+            type: this.selectedMailingLists.title.toLowerCase(),
+          },
+        });
+
+        // Login request
+        const loginResponse = await axiosInstance.post('', {
+          query: LOGIN_QUERY,
+          variables: {
+            email: this.email,
+            password: this.password,
+          },
+        });
+
+        const token = loginResponse.data.data.user.login;
+        if (token) {
+          localStorage.setItem("token", token);
+          if (this.selectedMailingLists.title.toLowerCase() === 'applicant') {
+            this.$router.push("/profile-create");
+          } else {
+            this.$router.push("/company-create");
+          }
+        }
       } catch (error) {
-        this.errorMessage = error.response?.data?.errors[0].msg || "Signup failed. Please try again.";
+        this.errorMessage = error.response?.data?.errors?.[0]?.message || "Signup failed. Please try again.";
       }
+
       this.isLoading = false;
-    },
+    }
   },
   mounted() {
     this.selectedMailingLists = this.mailingLists[0]

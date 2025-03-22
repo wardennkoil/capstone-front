@@ -5,11 +5,12 @@ import { PhotoIcon, UserCircleIcon, TrashIcon, ChevronDownIcon } from '@heroicon
 export default {
   name: "CompanyCreatePage",
   components: {PrimaryButton, PhotoIcon, UserCircleIcon, TrashIcon, ChevronDownIcon},
+
 }
 </script>
 
 <template>
-  <form class="m-32 mb-32">
+  <form class="m-16 md:m-32">
     <div class="space-y-12">
       <div class="grid grid-cols-1 gap-x-8 gap-y-10 border-b border-gray-900/10 pb-12 md:grid-cols-3">
         <div>
