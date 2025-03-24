@@ -14,9 +14,9 @@ export default {
     };
   },
   mounted() {
-    if (localStorage.getItem("token")) {
-      this.$router.push("/loading");
-    }
+    // if (localStorage.getItem("token")) {
+    //   this.$router.push("/loading");
+    // }
   },
   methods: {
     async handleLogin() {
