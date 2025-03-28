@@ -12,6 +12,7 @@ import ApplyJobPage from "../src/views/Applicant/ApplyJobPage.vue";
 
 
 const routes = [
+    {path: '/', redirect: '/login'},
     { path: '/login', component: LoginPage },
     { path: '/signup', component: SignupPage },
     { path: '/profile-create', component: ProfileCreatePage },
