@@ -21,7 +21,7 @@ const routes = [
     { path: '/job-list', component: JobListingsPage },
     {path: '/job/:id', component: JobDetailsPage},
     {path: '/job/:id/applicant/:applicantId', component: ReviewApplicantPage},
-    {path: '/job/:id/apply', component: ApplyJobPage},
+    {path: '/apply', component: ApplyJobPage},
 ]
 
 const router = createRouter({

@@ -3,7 +3,6 @@ import axiosInstance from "../../requests/axiosInstance.js";
 import AuthSubmitButton from "../../components/AuthSubmitButton.vue";
 import { RadioGroup, RadioGroupOption } from '@headlessui/vue'
 import { CheckCircleIcon } from '@heroicons/vue/20/solid'
-import { gql } from 'graphql-tag';
 
 export default {
   name: "SignupPage",
@@ -20,8 +19,8 @@ export default {
       errorMessage: '',
       isLoading: false,
       mailingLists: [
-        { id: 1, title: 'Applicant', },
-        { id: 2, title: 'Company', },
+        { id: 1, title: 'Applicant',  },
+        { id: 2, title: 'Manager', },
       ],
       selectedMailingLists: {},
     };
@@ -37,28 +36,27 @@ export default {
         return;
       }
 
-      const SIGNUP_MUTATION = gql`
-    mutation Signup($firstName: String!, $lastName: String!, $email: String!, $password: String!, $phone: String!, $type: String!) {
-      user {
-        signup(
-          first_name: $firstName,
-          last_name: $lastName,
-          email: $email,
-          password: $password,
-          phone: $phone,
-          type: $type
-        ) {
-          _id
-          first_name
-          last_name
-          email
-          phone
-        }
-      }
+      const SIGNUP_MUTATION = `
+    mutation {
+  user {
+    signup(
+      first_name: "${this.firstname}"
+      last_name: "${this.lastname}"
+      email: "${this.email}"
+      password: "${this.password}"
+      phone: "${this.phone}"
+      type: "${this.selectedMailingLists.title.toLowerCase()}"
+    ) {
+      _id
+      first_name
+      last_name
+      email
+      phone
     }
-  `;
+  }
+}`;
 
-      const LOGIN_QUERY = gql`
+      const LOGIN_QUERY = `
     query Login($email: String!, $password: String!) {
       user {
         login(email: $email, password: $password)
@@ -70,15 +68,10 @@ export default {
         // Signup request
         await axiosInstance.post('', {
           query: SIGNUP_MUTATION,
-          variables: {
-            firstName: this.firstname,
-            lastName: this.lastname,
-            email: this.email,
-            password: this.password,
-            phone: this.phone,
-            type: this.selectedMailingLists.title.toLowerCase(),
-          },
-        });
+        }).then((response) => {
+          localStorage.setItem("userId", response.data.data.user.signup._id);
+        }
+        );
 
         // Login request
         const loginResponse = await axiosInstance.post('', {
