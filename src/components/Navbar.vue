@@ -61,12 +61,12 @@ export default {
         >
           Job Opportunities
         </a>
-        <a
-            href="#"
+        <router-link
+            to="/apply-jobs"
             class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50"
         >
           Apply to Jobs
-        </a>
+        </router-link>
       </div>
     </div>
   </nav>
