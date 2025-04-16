@@ -1,7 +1,6 @@
 <script>
 import AuthSubmitButton from "../../components/AuthSubmitButton.vue";
 import axiosInstance from "../../requests/axiosInstance.js"; // Import axiosInstance
-require('graphql')
 export default {
   name: "LoginPage",
   components: { AuthSubmitButton },
@@ -23,32 +22,30 @@ export default {
       this.errorMessage = null;
       this.isLoading = true;
       const LOGIN_QUERY = `
-      query {
-        user {
-          login(email: ${this.email}, password: ${this.password})
-        }
-      }
-        `;
-      try {
-        console.log("recieved login")
-        const response = await axiosInstance.post("", {
-          query: LOGIN_QUERY,
-          variables: {
-            email: this.email,
-            password: this.password,
-          },
-        }).then((response) => {
-          console.log(`user ${response.data.user.login} login`)
-          localStorage.setItem("token", response.data.user.login);
-          this.$router.push("/profile-create");
-        });
-        
-        console.log("Login Successful:", response.data);
-        // Handle success: Store token, redirect user, etc.
-      } catch (error) {
-        this.errorMessage = error.response?.data || "Login failed.";
-        console.error("Login Error:", this.errorMessage);
-      }
+  query Login($email: String!, $password: String!) {
+    user {
+      login(email: $email, password: $password)
+    }
+  }
+`;
+try {
+  const response = await axiosInstance.post("", {
+    query: LOGIN_QUERY,
+    variables: {
+      email: this.email,
+      password: this.password,
+    },
+  });
+
+  const token = response.data.data.user.login;
+  console.log(`User logged in with token: ${token}`);
+
+  localStorage.setItem("token", token);
+  this.$router.push("/profile-create");
+} catch (error) {
+  this.errorMessage = error.response?.data?.errors?.[0]?.message || "Login failed.";
+  console.error("Login Error:", this.errorMessage);
+}
       this.isLoading = false;
     },
 

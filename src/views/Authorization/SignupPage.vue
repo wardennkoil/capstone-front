@@ -4,7 +4,6 @@ import AuthSubmitButton from "../../components/AuthSubmitButton.vue";
 import { RadioGroup, RadioGroupOption } from '@headlessui/vue'
 import { CheckCircleIcon } from '@heroicons/vue/20/solid'
 
-
 export default {
   name: "SignupPage",
   components: {AuthSubmitButton, RadioGroup, RadioGroupOption, CheckCircleIcon},
@@ -54,11 +53,19 @@ export default {
       email
       phone
     }
+  }
+}`;
+
+const LOGIN_QUERY = `
+  query Login($email: String!, $password: String!) {
+    user {
+      login(email: $email, password: $password)
     }
-    }`;
-    
-    
-    try {
+  }
+`;
+
+
+      try {
         // Signup request
         await axiosInstance.post('', {
           query: SIGNUP_MUTATION,
@@ -70,12 +77,7 @@ export default {
         // Login request
         const loginResponse = await axiosInstance.post('', {
           query: LOGIN_QUERY,
-          variables: {
-            email: this.email,
-            password: this.password,
-          },
         });
-
         const token = loginResponse.data.data.user.login;
         if (token) {
           localStorage.setItem("token", token);
