@@ -1,7 +1,7 @@
 <script>
 import AuthSubmitButton from "../../components/AuthSubmitButton.vue";
 import axiosInstance from "../../requests/axiosInstance.js"; // Import axiosInstance
-
+require('graphql')
 export default {
   name: "LoginPage",
   components: { AuthSubmitButton },
@@ -22,19 +22,31 @@ export default {
     async handleLogin() {
       this.errorMessage = null;
       this.isLoading = true;
+      const LOGIN_QUERY = `
+      query {
+        user {
+          login(email: ${this.email}, password: ${this.password})
+        }
+      }
+        `;
       try {
-        const response = await axiosInstance.post("/auth/login", {
-          email: this.email,
-          password: this.password,
+        console.log("recieved login")
+        const response = await axiosInstance.post("", {
+          query: LOGIN_QUERY,
+          variables: {
+            email: this.email,
+            password: this.password,
+          },
         }).then((response) => {
-          localStorage.setItem("token", response.data.token);
+          console.log(`user ${response.data.user.login} login`)
+          localStorage.setItem("token", response.data.user.login);
           this.$router.push("/profile-create");
         });
-
+        
         console.log("Login Successful:", response.data);
         // Handle success: Store token, redirect user, etc.
       } catch (error) {
-        this.errorMessage = error.response?.data?.message || "Login failed.";
+        this.errorMessage = error.response?.data || "Login failed.";
         console.error("Login Error:", this.errorMessage);
       }
       this.isLoading = false;
